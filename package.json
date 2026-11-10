@@ -9,7 +9,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test test/*.test.mjs",
     "check": "node scripts/check-site.mjs",
     "coverage": "node scripts/check-coverage.mjs",
     "validate": "html-validate \"site/**/*.html\"",
