@@ -3,12 +3,18 @@
 name = "postern-site"
 compatibility_date = "2026-10-01"
 
-# NOT PUBLIC YET (postern#838). workers.dev and preview URLs are off, and there are no
-# routes: a deploy uploads the site but nothing serves it. The posternonline.com apex and
-# www routes still 301 to the demo; the cutover is the lead's call after Conrad reviews.
-# A temporary preview route is added here only with the lead's approval.
+# workers.dev and preview URLs stay off. The ONE route is the preview host
+# next.posternonline.com (0.1.0), which Conrad opens to review the site. While it is the
+# only route, site-mode.json keeps "preview": true, so every page is noindex and
+# robots.txt disallows everything.
+# The posternonline.com apex and www still 301 to the demo and are NOT routed here. The
+# cutover is Conrad's call; when it happens, add the apex and www routes and run
+# `node scripts/set-preview.mjs off` in the same PR.
 workers_dev = false
 preview_urls = false
+routes = [
+  { pattern = "next.posternonline.com", custom_domain = true },
+]
 
 [assets]
 directory = "./site"

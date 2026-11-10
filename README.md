@@ -3,8 +3,8 @@
 The marketing site for [Postern](https://github.com/skyphusion-labs/postern), self-hosted
 email for humans and agents. It will live at `posternonline.com`.
 
-Status: **not public yet** (postern#838). The hero and tagline are marked DRAFT for
-Conrad, who owns the pitch. The crew builds the site.
+Status: **preview** at https://next.posternonline.com (postern#838), not indexed. The hero and
+tagline are marked DRAFT for Conrad, who owns the pitch. The crew builds the site.
 
 ## Rules
 
@@ -42,11 +42,20 @@ npm run coverage         # site map coverage
 npm run dev              # wrangler dev on http://localhost:8787
 ```
 
+## Preview mode
+
+`site-mode.json` holds one flag, `"preview"`. While it is `true`, every page carries a robots
+noindex meta, `_headers` sends `X-Robots-Tag: noindex, nofollow`, and `robots.txt` disallows
+everything. Change it ONLY with `node scripts/set-preview.mjs on|off`, which rewrites those
+files to match; CI fails if the flag and the files disagree. At the apex cutover, run
+`off` in the same PR that adds the apex and www routes.
+
 ## Deploy
 
 `.github/workflows/deploy.yml` deploys on a `vX.Y.Z` tag on `main` that matches a
 `## X.Y.Z` heading in `CHANGELOG.md`, or by hand from `main`. A merge never deploys.
-Routes are not wired yet, so a deploy is not reachable.
+The only route is the preview host `next.posternonline.com`. The apex and www still go to
+the demo; the cutover is Conrad's call.
 
 ## License
 

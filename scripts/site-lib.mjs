@@ -284,3 +284,69 @@ export function checkCoverage(root) {
   }
   return { problems, stats: { inSitemap: sm.locs.length, built: pages.size, reachable, linkedEverywhere } };
 }
+
+// ---- preview mode (search engines must not index a draft) --------------------
+// The flag is site-mode.json { "preview": true|false }. scripts/set-preview.mjs applies it
+// to the served files, and checkPreview() fails CI when the files and the flag disagree.
+// Preview ON means: a robots noindex meta on every page, robots.txt disallows everything,
+// and _headers sends X-Robots-Tag (which also covers images and other non-HTML files).
+// 404.html is noindex in both modes and is not touched.
+export const PREVIEW_META = '<meta name="robots" content="noindex, nofollow" data-preview>';
+export const PREVIEW_HEADER = "  X-Robots-Tag: noindex, nofollow";
+export const ROBOTS_PREVIEW = "# Preview build (site-mode.json preview: true). Nothing here is indexed.\nUser-agent: *\nDisallow: /\n";
+export const ROBOTS_PUBLIC = `User-agent: *\nAllow: /\n\nSitemap: ${SITE_ORIGIN}/sitemap.xml\n`;
+
+export function readMode(repoRoot) {
+  const f = join(repoRoot, "site-mode.json");
+  if (!existsSync(f)) return { error: "site-mode.json missing" };
+  let v;
+  try { v = JSON.parse(readFileSync(f, "utf8")); } catch (e) { return { error: `site-mode.json is not JSON: ${e.message}` }; }
+  if (typeof v.preview !== "boolean") return { error: 'site-mode.json needs "preview": true or false' };
+  return { preview: v.preview };
+}
+
+function previewPages(root) {
+  return listFiles(root).filter((f) => extname(f) === ".html" && relative(root, f) !== "404.html");
+}
+
+// Returns { file: newText } for every file that must change to match `on`.
+export function previewEdits(root, on) {
+  const edits = {};
+  for (const f of previewPages(root)) {
+    const text = readFileSync(f, "utf8");
+    const without = text.split("\n").filter((l) => l.trim() !== PREVIEW_META).join("\n");
+    let next = without;
+    if (on) {
+      const lines = without.split("\n");
+      const i = lines.findIndex((l) => /<meta name="viewport"/.test(l));
+      if (i < 0) throw new Error(`${relative(root, f)}: no viewport meta to anchor the robots meta`);
+      lines.splice(i + 1, 0, PREVIEW_META);
+      next = lines.join("\n");
+    }
+    if (next !== text) edits[f] = next;
+  }
+  const robots = join(root, "robots.txt");
+  const want = on ? ROBOTS_PREVIEW : ROBOTS_PUBLIC;
+  if (!existsSync(robots) || readFileSync(robots, "utf8") !== want) edits[robots] = want;
+  const headers = join(root, "_headers");
+  if (existsSync(headers)) {
+    const text = readFileSync(headers, "utf8");
+    const lines = text.split("\n").filter((l) => l !== PREVIEW_HEADER);
+    if (on) {
+      const i = lines.findIndex((l) => l.trim() === "/*");
+      if (i < 0) throw new Error("_headers: no /* block to carry X-Robots-Tag");
+      lines.splice(i + 1, 0, PREVIEW_HEADER);
+    }
+    const next = lines.join("\n");
+    if (next !== text) edits[headers] = next;
+  }
+  return edits;
+}
+
+export function checkPreview(repoRoot, root) {
+  const mode = readMode(repoRoot);
+  if (mode.error) return [mode.error];
+  const edits = previewEdits(root, mode.preview);
+  return Object.keys(edits).map((f) =>
+    `${relative(root, f)} does not match site-mode.json preview: ${mode.preview} (run: node scripts/set-preview.mjs ${mode.preview ? "on" : "off"})`);
+}
