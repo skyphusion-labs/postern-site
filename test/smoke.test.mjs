@@ -15,6 +15,7 @@ const SITE = join(REPO, "site");
 const EXP = expectations(REPO);
 const BEACON = '<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v123" integrity="sha512-x" data-cf-beacon=\'{"token":"t"}\' crossorigin="anonymous"></script>';
 const HOME = EXP.pages.find((p) => p.path === "/");
+const BEACON_FINDING = /: served a foreign <script src="https:\/\/static\.cloudflareinsights\.com\/beacon\.min\.js\//;
 
 function served(page, { body, headers = {}, status } = {}) {
   const file = page.status === 404 ? join(SITE, "404.html") : join(SITE, page.path, "index.html");
@@ -41,7 +42,7 @@ test("control: every real page, served cleanly, passes", () => {
 });
 test("smoke goes red on an injected foreign script (the 2026-11-10 beacon)", () => {
   const body = readFileSync(join(SITE, "index.html"), "utf8").replace("</body>", BEACON + "</body>");
-  has(checkPage(served(HOME, { body }), HOME, EXP), /served a foreign <script src="https:\/\/static.cloudflareinsights.com/);
+  has(checkPage(served(HOME, { body }), HOME, EXP), BEACON_FINDING);
 });
 test("smoke goes red on an injected inline script, stylesheet or iframe", () => {
   const base = readFileSync(join(SITE, "index.html"), "utf8");
@@ -116,6 +117,6 @@ test("end to end: an edge that injects a beacon for browsers only FAILS the smok
   assert.doesNotMatch(plain, /cloudflareinsights/);
   // ...and the smoke, which fetches as a browser, does not.
   const problems = await smoke(base, EXP, quiet);
-  assert.equal(problems.filter((p) => /static.cloudflareinsights.com/.test(p)).length, EXP.pages.length, JSON.stringify(problems));
+  assert.equal(problems.filter((p) => BEACON_FINDING.test(p)).length, EXP.pages.length, JSON.stringify(problems));
   assert.match((await fetchAs(base + "/")).body, /cloudflareinsights/);
 });

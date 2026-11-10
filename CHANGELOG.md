@@ -22,6 +22,8 @@ workflow refuses a tag without its heading.
   a tag a browser runs after one of those was hidden from every check. That included the
   smoke, which reads HTML the edge served. `stripComments` now ends a comment where a browser
   does; `test/comments.test.mjs` holds the controls.
+- The smoke tests match the beacon finding with one exact regex (escaped dots, anchored on
+  the message), not `/static.cloudflareinsights.com/` (CodeQL alerts 2 and 4).
 
 ## 0.1.0 (2026-11-10)
 
