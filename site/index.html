@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postern: email for humans and agents, self-hosted on Cloudflare</title>
+<meta name="description" content="Postern is an open-source, self-hosted mailbox on your own Cloudflare account. Agents connect over MCP with their own scoped tokens; people use webmail and IMAP. One command installs it.">
+<link rel="canonical" href="https://posternonline.com/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/theme.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="1" y="1" width="30" height="30" rx="8" fill="currentColor"/><path d="M10 25V14a6 6 0 0 1 12 0v11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M7 25h18" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Postern</a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="/agents/">For agents</a></li>
+        <li><a href="/humans/">Webmail and IMAP</a></li>
+        <li><a href="/self-host/">Self-host</a></li>
+        <li><a href="https://demo.posternonline.com">Demo</a></li>
+        <li><a href="https://github.com/skyphusion-labs/postern">GitHub</a></li>
+      </ul>
+    </nav>
+    <button id="theme-btn" class="theme-btn" type="button" hidden>Theme</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Open source. Self-hosted. Built for agents.</p>
+      <h1 class="draft" data-draft="hero">Email for humans and agents, in your own Cloudflare account.<span class="draft-tag">DRAFT</span></h1>
+      <p class="lede draft" data-draft="tagline">Postern is a mailbox you run yourself. Agents connect over MCP with their own identity and scoped tokens. People use webmail or any IMAP app. One command installs it, and your mail never leaves your account.<span class="draft-tag">DRAFT</span></p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://demo.posternonline.com">Try the demo</a>
+        <a class="btn btn-secondary" href="/self-host/">Install it</a>
+        <a class="btn btn-secondary" href="https://github.com/skyphusion-labs/postern">Source on GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="three-doors">
+    <div class="wrap">
+      <h2 id="three-doors">One mailbox, three ways in</h2>
+      <p class="prose">Postern stores every message in one searchable store and serves it through one API. Agents and people are both clients of that API. There is no second copy of your mail.</p>
+      <div class="grid grid-3">
+        <article class="card">
+          <h3><span class="num">1</span><a href="/agents/">For agents</a></h3>
+          <p>An MCP server, <code>@skyphusion/postern-mcp</code>, gives an agent search, list, read and thread tools. Each agent gets its own token, bound to its own address, with only the scopes you grant.</p>
+          <p><a href="/agents/">How agents use Postern</a></p>
+        </article>
+        <article class="card">
+          <h3><span class="num">2</span><a href="/humans/">For people</a></h3>
+          <p>A webmail app is built in at <code>/webmail</code>, with sign-in, compose, threads and search. An IMAP proxy opens the same mailbox in Thunderbird, mutt or Apple Mail.</p>
+          <p><a href="/humans/">Webmail and IMAP</a></p>
+        </article>
+        <article class="card">
+          <h3><span class="num">3</span><a href="/self-host/">On your account</a></h3>
+          <p>One command, <code>node deploy/postern.mjs install</code>, sets Postern up in your own Cloudflare account. In our measured run the install took 22 seconds, and mail flowed about a minute later.</p>
+          <p><a href="/self-host/">Install Postern</a></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="see-it">
+    <div class="wrap">
+      <h2 id="see-it">See it</h2>
+      <div class="shot-pair">
+        <figure class="shot">
+          <img src="/assets/img/webmail-inbox.png" width="1440" height="900" alt="Postern webmail on a desktop: a folder list, an inbox of five messages, and an open message marked trusted sender, with its thread below.">
+          <figcaption>Webmail on a desktop. Example data.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/assets/img/webmail-mobile-list.png" width="390" height="844" loading="lazy" alt="Postern webmail on a phone: the inbox list with a search box and a Compose button.">
+          <figcaption>The same inbox on a phone.</figcaption>
+        </figure>
+      </div>
+      <p>The public demo is a real Postern instance with a read-only token. <a href="https://demo.posternonline.com">Open the demo</a>. It is a shared, public mailbox, so do not mail it anything private.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="why">
+    <div class="wrap">
+      <h2 id="why">Why Postern</h2>
+      <ul class="facts prose">
+        <li><strong>Your mail stays yours.</strong> Messages live in your D1 database, attachments in your R2 bucket. Skyphusion Labs runs no mail service and holds none of your mail.</li>
+        <li><strong>Agents send as themselves.</strong> Per-identity credentials replace one shared mailbox password, so every message says which identity sent it.</li>
+        <li><strong>Reads say what they covered.</strong> Every read answer carries an <code>identityScope</code> field, so an agent can tell "not in the mailbox" from "not in my slice".</li>
+        <li><strong>Trust is checked, not assumed.</strong> A message is marked trusted only when its DMARC or DKIM result aligns with an allowed sender domain.</li>
+        <li><strong>Open source.</strong> The server is AGPL-3.0. The MCP server, the Python client and the IMAP proxy are MIT, so you can embed them anywhere.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="no-hosted">
+    <div class="wrap prose">
+      <h2 id="no-hosted">Self-hosted only</h2>
+      <p>There is no hosted Postern and no account to sign up for. You run it on your own Cloudflare account, under your own domain. Receiving mail works on the Cloudflare free plan. Sending needs Cloudflare Email Sending, which is on the Workers Paid plan (USD 5 a month, paid to Cloudflare).</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="/self-host/">Install Postern</a>
+        <a class="btn btn-secondary" href="https://github.com/skyphusion-labs/postern/blob/main/DEPLOY.md">Read DEPLOY.md</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <ul>
+      <li><a href="/privacy/">Privacy</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern">Postern source</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern-site">Site source</a></li>
+      <li><a href="https://skyphusion.org">Skyphusion Labs</a></li>
+    </ul>
+    <p>This site sets no cookies and loads no trackers, fonts or embeds from anyone else.</p>
+    <p>Postern is free software under the AGPL-3.0. This site is AGPL-3.0 too.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postern for agents: MCP, scoped tokens and identityScope</title>
+<meta name="description" content="Connect AI agents to a self-hosted Postern mailbox over MCP. Each agent sends as itself with its own scoped token, and every read reports the scope it covered.">
+<link rel="canonical" href="https://posternonline.com/agents/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/theme.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="1" y="1" width="30" height="30" rx="8" fill="currentColor"/><path d="M10 25V14a6 6 0 0 1 12 0v11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M7 25h18" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Postern</a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="/agents/" aria-current="page">For agents</a></li>
+        <li><a href="/humans/">Webmail and IMAP</a></li>
+        <li><a href="/self-host/">Self-host</a></li>
+        <li><a href="https://demo.posternonline.com">Demo</a></li>
+        <li><a href="https://github.com/skyphusion-labs/postern">GitHub</a></li>
+      </ul>
+    </nav>
+    <button id="theme-btn" class="theme-btn" type="button" hidden>Theme</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">For agents</p>
+      <h1>A mailbox your agents can use as themselves</h1>
+      <p class="lede">Postern was designed for agents from the start. An agent connects over MCP, gets its own identity and a token with only the scopes you grant, and every answer says exactly what it covered.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="mcp">
+    <div class="wrap prose">
+      <h2 id="mcp">Connect over MCP</h2>
+      <p>The MCP server is published on npm as <code>@skyphusion/postern-mcp</code>. It is a small stdio server over the Postern mailbox API, so it works with Claude Code, Cursor and other MCP clients.</p>
+<pre><code>{
+  "mcpServers": {
+    "postern": {
+      "command": "npx",
+      "args": ["-y", "@skyphusion/postern-mcp"],
+      "env": {
+        "POSTERN_API_URL": "https://mail.your-domain.example",
+        "POSTERN_API_TOKEN": "your agent token"
+      }
+    }
+  }
+}</code></pre>
+      <ul>
+        <li><strong>Read tools, always on:</strong> search, list, read a message, read a thread, and list folders. Search defaults to hybrid (semantic plus keyword), with full-text, semantic and literal substring modes too.</li>
+        <li><strong>Send tools, opt-in:</strong> <code>mailbox_send</code>, <code>mailbox_reply</code> and the draft tools register only when you also set a send credential. An agent that should only read never sees them.</li>
+      </ul>
+      <p>Point it at the public demo to try the read tools now. The demo URL and its read-only token are in the <a href="https://github.com/skyphusion-labs/postern#try-it-live">Postern README</a>.</p>
+      <p><a href="https://github.com/skyphusion-labs/postern/blob/main/mcp/README.md">Full MCP tool reference</a></p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="identities">
+    <div class="wrap prose">
+      <h2 id="identities">Each agent sends as itself</h2>
+      <p>Instead of one shared mailbox password, you register one token per person or agent. Each token is bound to one address and carries its own scopes, such as <code>read</code>, <code>send</code>, or both. The registry stores only token hashes, never the tokens.</p>
+      <p>So a leaked token is limited to what it was for, and every sent message shows which identity sent it.</p>
+      <p><a href="https://github.com/skyphusion-labs/postern/blob/main/docs/SEND-IDENTITIES.md">How per-identity credentials work</a></p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="scope">
+    <div class="wrap prose">
+      <h2 id="scope">Every read says what it covered</h2>
+      <p>Every read answer includes an <code>identityScope</code> field. It reports the scope the server applied, not the one the caller asked for. An agent never has to guess whether an empty result means "not in the mailbox" or "not in my slice".</p>
+      <p><a href="https://github.com/skyphusion-labs/postern/blob/main/docs/CONTRACT.md">The mailbox API contract</a></p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="reach">
+    <div class="wrap prose">
+      <h2 id="reach">What an agent token can read</h2>
+      <div class="note">
+        <p>By default, a read-capable agent token reads every address on its deployment, including the people on it. That is on purpose: an agent asked to find last month's invoice must be able to read the mailbox it was delivered to.</p>
+      </div>
+      <ul>
+        <li>An agent can change only its own mail. Marking read, flagging, filing and quoting in a reply stay bound to its own address.</li>
+        <li>To keep an agent send-only, give it a token without the <code>read</code> scope. Every read route refuses it.</li>
+        <li>A person signed in to webmail reads only their own address, plus any shared role address they are on.</li>
+      </ul>
+      <p><a href="https://github.com/skyphusion-labs/postern#what-an-agent-credential-can-read">The full credential table</a></p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="trust">
+    <div class="wrap prose">
+      <h2 id="trust">A trust signal agents can rely on</h2>
+      <p>Each stored message carries a <code>trusted</code> flag. It is set only when the sender is on your allowed sender domains and the message passes aligned DMARC or DKIM. SPF alone never counts. An agent can act on mail from your own systems and treat everything else with care.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="other-clients">
+    <div class="wrap prose">
+      <h2 id="other-clients">Scripts and Workers</h2>
+      <ul>
+        <li><strong>Python:</strong> <code>pip install postern-client</code> gives you a standard-library HTTP client and a <code>postern</code> command line tool. <a href="https://github.com/skyphusion-labs/postern/blob/main/clients/python/README.md">Python client docs</a></li>
+        <li><strong>Cloudflare Workers in the same account</strong> can call the mailbox over a service binding with no token. <a href="https://github.com/skyphusion-labs/postern/blob/main/docs/INTEGRATION.md">Integration guide</a></li>
+      </ul>
+      <div class="cta">
+        <a class="btn btn-primary" href="/self-host/">Install Postern</a>
+        <a class="btn btn-secondary" href="https://demo.posternonline.com">Try the demo</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <ul>
+      <li><a href="/privacy/">Privacy</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern">Postern source</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern-site">Site source</a></li>
+      <li><a href="https://skyphusion.org">Skyphusion Labs</a></li>
+    </ul>
+    <p>This site sets no cookies and loads no trackers, fonts or embeds from anyone else.</p>
+    <p>Postern is free software under the AGPL-3.0. This site is AGPL-3.0 too.</p>
+  </div>
+</footer>
+</body>
+</html>

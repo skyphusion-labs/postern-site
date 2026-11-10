@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postern webmail and IMAP</title>
+<meta name="description" content="Postern includes a webmail app and an IMAP proxy for Thunderbird, mutt and Apple Mail, both on the same mailbox your agents use.">
+<link rel="canonical" href="https://posternonline.com/humans/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/theme.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="1" y="1" width="30" height="30" rx="8" fill="currentColor"/><path d="M10 25V14a6 6 0 0 1 12 0v11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M7 25h18" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Postern</a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="/agents/">For agents</a></li>
+        <li><a href="/humans/" aria-current="page">Webmail and IMAP</a></li>
+        <li><a href="/self-host/">Self-host</a></li>
+        <li><a href="https://demo.posternonline.com">Demo</a></li>
+        <li><a href="https://github.com/skyphusion-labs/postern">GitHub</a></li>
+      </ul>
+    </nav>
+    <button id="theme-btn" class="theme-btn" type="button" hidden>Theme</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">For people</p>
+      <h1>Webmail and IMAP on the same mailbox</h1>
+      <p class="lede">People get two ways in. Both are clients of the same API the agents use, so everyone sees one mailbox and one copy of each message.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="webmail">
+    <div class="wrap">
+      <h2 id="webmail">Webmail, built in</h2>
+      <div class="prose">
+        <p>Every Postern serves a webmail app at <code>/webmail</code>. It is one self-contained page with no build step. A new install turns on sign-in and creates your first admin login.</p>
+        <ul>
+          <li>Inbox, Sent, Drafts, Archive, Junk and Trash folders, with threads.</li>
+          <li>Search in hybrid, full-text, semantic or literal mode, with filters.</li>
+          <li>Compose, reply, reply all and forward, when your login may send.</li>
+          <li>HTML email is shown in a sandboxed frame. No scripts run and no remote trackers load.</li>
+          <li>Light and dark themes, and a layout that works on a phone.</li>
+        </ul>
+      </div>
+      <div class="grid grid-2">
+        <figure class="shot">
+          <img src="/assets/img/webmail-message.png" width="1440" height="900" loading="lazy" alt="A message open in Postern webmail, with its trust verdict, sender, recipients and an attachment.">
+          <figcaption>Reading a message, with its trust verdict and attachments.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/assets/img/webmail-search.png" width="1440" height="900" loading="lazy" alt="Postern webmail with a search for deploy, the filter panel open with read state, attachment, sender and date filters, and one matching result.">
+          <figcaption>Search with filters.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/assets/img/webmail-html-email.png" width="1440" height="900" loading="lazy" alt="An HTML newsletter open in Postern webmail, with a notice that 2 remote items were blocked to protect your privacy.">
+          <figcaption>HTML email in a sandbox. Remote images are blocked.</figcaption>
+        </figure>
+        <figure class="shot">
+          <img src="/assets/img/webmail-dark.png" width="1440" height="900" loading="lazy" alt="Postern webmail in its dark theme, showing the inbox and an open message.">
+          <figcaption>The dark theme.</figcaption>
+        </figure>
+      </div>
+      <p class="prose">Screenshots use example data. <a href="https://github.com/skyphusion-labs/postern/blob/main/webmail/README.md">Webmail setup and security model</a></p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="imap">
+    <div class="wrap prose">
+      <h2 id="imap">IMAP for the mail app you already use</h2>
+      <p>The IMAP proxy serves the Postern mailbox to Thunderbird, mutt, Apple Mail and iOS Mail. It reads mail, keeps the read and unread flag, and deletes when its token allows it. It is a small Python server, also built as a container image, that you run next to your Postern.</p>
+      <ul>
+        <li><a href="https://github.com/skyphusion-labs/postern/blob/main/imap/README.md">IMAP proxy setup</a></li>
+        <li><a href="https://github.com/skyphusion-labs/postern/blob/main/docs/IMAP-APPLE-MAIL.md">Using it with Apple Mail</a></li>
+      </ul>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://demo.posternonline.com/webmail">Open the demo webmail</a>
+        <a class="btn btn-secondary" href="/self-host/">Install Postern</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <ul>
+      <li><a href="/privacy/">Privacy</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern">Postern source</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern-site">Site source</a></li>
+      <li><a href="https://skyphusion.org">Skyphusion Labs</a></li>
+    </ul>
+    <p>This site sets no cookies and loads no trackers, fonts or embeds from anyone else.</p>
+    <p>Postern is free software under the AGPL-3.0. This site is AGPL-3.0 too.</p>
+  </div>
+</footer>
+</body>
+</html>

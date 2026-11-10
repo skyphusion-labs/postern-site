@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy: this site sets no cookies and loads no trackers</title>
+<meta name="description" content="The Postern website sets no cookies, runs no analytics and loads nothing from third parties.">
+<link rel="canonical" href="https://posternonline.com/privacy/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/theme.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="1" y="1" width="30" height="30" rx="8" fill="currentColor"/><path d="M10 25V14a6 6 0 0 1 12 0v11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M7 25h18" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Postern</a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="/agents/">For agents</a></li>
+        <li><a href="/humans/">Webmail and IMAP</a></li>
+        <li><a href="/self-host/">Self-host</a></li>
+        <li><a href="https://demo.posternonline.com">Demo</a></li>
+        <li><a href="https://github.com/skyphusion-labs/postern">GitHub</a></li>
+      </ul>
+    </nav>
+    <button id="theme-btn" class="theme-btn" type="button" hidden>Theme</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">Privacy</p>
+      <h1>This site does not track you</h1>
+      <p class="lede">Privacy is the main goal of Postern, and this site follows the same rule.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="site">
+    <div class="wrap prose">
+      <h2 id="site">This website</h2>
+      <ul>
+        <li><strong>No cookies.</strong> The site sets none.</li>
+        <li><strong>No trackers and no analytics.</strong> There is no analytics script and no tracking pixel.</li>
+        <li><strong>Nothing from anyone else.</strong> Every script, stylesheet, image and font comes from this site. There are no third-party fonts, embeds or frames. The site's Content Security Policy enforces this in your browser, and its CI fails any change that adds one.</li>
+        <li><strong>Your theme choice stays in your browser.</strong> If you pick light or dark, the choice is saved in this browser's local storage. It is never sent anywhere.</li>
+        <li><strong>Hosting.</strong> Cloudflare serves the site. Like any web host, it receives each request, including your IP address and browser details, in order to answer it. We have not turned on Worker logs or analytics for this site.</li>
+      </ul>
+      <p>The site's source is public, so you can check every claim above: <a href="https://github.com/skyphusion-labs/postern-site">skyphusion-labs/postern-site</a>.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="software">
+    <div class="wrap prose">
+      <h2 id="software">The Postern software</h2>
+      <p>Postern is software you run yourself, on your own Cloudflare account. Skyphusion Labs operates no mail service, so we hold none of your mail. The public demo mailbox is the one instance we run, and anything sent to it is public.</p>
+      <p><a href="https://github.com/skyphusion-labs/postern/blob/main/PRIVACY.md">The Postern privacy policy</a></p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <ul>
+      <li><a href="/privacy/" aria-current="page">Privacy</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern">Postern source</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern-site">Site source</a></li>
+      <li><a href="https://skyphusion.org">Skyphusion Labs</a></li>
+    </ul>
+    <p>This site sets no cookies and loads no trackers, fonts or embeds from anyone else.</p>
+    <p>Postern is free software under the AGPL-3.0. This site is AGPL-3.0 too.</p>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,97 @@
+name: deploy
+
+# Deploys the static-assets Worker `postern-site` (wrangler.toml) to Cloudflare.
+# Gates, the same shape as vivijure-blender deploy.yml:
+#   * a pushed vX.Y.Z tag deploys only when the tagged commit is on main AND the tag
+#     matches a `## X.Y.Z` heading in CHANGELOG.md (scripts/deploy-gate.mjs);
+#   * workflow_dispatch deploys only from main.
+# A merge to main never deploys.
+#
+# NOT PUBLIC YET (postern#838): wrangler.toml has workers_dev and preview URLs off and no
+# routes, so a deploy uploads the site but nothing serves it. The posternonline.com
+# routes are the lead's call after Conrad reviews the site.
+#
+# Needs repo secrets CLOUDFLARE_API_TOKEN (Workers Scripts: Edit on the account) and
+# CLOUDFLARE_ACCOUNT_ID. The job refuses, by name, if either is missing.
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-postern-site
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Full history: merge-base has to be able to walk main.
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      # The control runs first: a gate whose refusal has never been observed is decoration.
+      - name: Control -- the ref and version gate can refuse
+        run: node --test --test-name-pattern="deploy gate" test/*.test.mjs
+      - name: The ref may deploy, and a tag matches CHANGELOG.md
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+        run: node scripts/deploy-gate.mjs "$EVENT" "$REF" CHANGELOG.md
+      - name: The commit is on main
+        run: |
+          set -euo pipefail
+          if ! git fetch --no-tags origin main; then
+            echo "::error::could not fetch origin/main, so ancestry is UNVERIFIABLE. Refusing to deploy."
+            exit 1
+          fi
+          head="$(git rev-parse HEAD)"
+          if ! git merge-base --is-ancestor "$head" origin/main; then
+            echo "::error::commit ${head} is not on origin/main; refusing to deploy an unreviewed commit. Land it on main and re-tag; do not move the tag."
+            exit 1
+          fi
+          echo "commit ${head} is on origin/main; ancestry guard passed."
+
+  deploy:
+    needs: gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      WRANGLER_SEND_METRICS: "false"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      # wrangler comes from package-lock.json, never a floating npx download.
+      - name: Install (lockfile)
+        run: npm ci --no-audit --no-fund
+      - name: The site passes its own checks
+        run: |
+          set -euo pipefail
+          node --test test/*.test.mjs
+          npx --no-install html-validate "site/**/*.html"
+          node scripts/check-site.mjs site
+          node scripts/check-coverage.mjs site
+      - name: Credentials are present
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -eu
+          [ -n "${CLOUDFLARE_API_TOKEN:+SET}" ] || { echo "::error::secret CLOUDFLARE_API_TOKEN is not set for this repo"; exit 1; }
+          [ -n "${CLOUDFLARE_ACCOUNT_ID:+SET}" ] || { echo "::error::secret CLOUDFLARE_ACCOUNT_ID is not set for this repo"; exit 1; }
+          echo "wrangler $(npx --no-install wrangler --version)"
+      - name: Deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --no-install wrangler deploy
