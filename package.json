@@ -1,6 +1,6 @@
 {
   "name": "postern-site",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Marketing site for Postern, self-hosted email for humans and agents.",
   "license": "AGPL-3.0-only",
@@ -12,6 +12,7 @@
     "test": "node --test test/*.test.mjs",
     "check": "node scripts/check-site.mjs",
     "coverage": "node scripts/check-coverage.mjs",
+    "smoke": "node scripts/smoke.mjs",
     "validate": "html-validate \"site/**/*.html\"",
     "dev": "wrangler dev"
   },

@@ -6,6 +6,25 @@ workflow refuses a tag without its heading.
 
 ## Unreleased
 
+## 0.1.1 (2026-11-10)
+
+- Post-deploy smoke (postern-site#3): after each deploy, `scripts/smoke.mjs` fetches every
+  page, asset and robots.txt from each custom-domain route AS A BROWSER and fails on a
+  foreign or inline script, a foreign link or frame, a CSP that differs from `site/_headers`,
+  a missing X-Robots-Tag noindex in preview mode, any cookie, a wrong status or redirect,
+  or a title that differs from the repo. In preview mode robots.txt must contain our own
+  `Disallow: /` group; Cloudflare Managed robots.txt may prepend its own groups. The ci
+  checks read repo files, so they could not see the analytics beacon the zone injected
+  for browsers on 2026-11-10; this step would have failed on it.
+- Comment handling in the checks follows the HTML spec (CodeQL alert 1,
+  `js/incomplete-multi-character-sanitization`). `parseTags` stripped comments with
+  `/<!--[\s\S]*?-->/`, which treats `<!-->` and `<!--->` as openers and ignores `--!>`, so
+  a tag a browser runs after one of those was hidden from every check. That included the
+  smoke, which reads HTML the edge served. `stripComments` now ends a comment where a browser
+  does; `test/comments.test.mjs` holds the controls.
+- The smoke tests match the beacon finding with one exact regex (escaped dots, anchored on
+  the message), not `/static.cloudflareinsights.com/` (CodeQL alerts 2 and 4).
+
 ## 0.1.0 (2026-11-10)
 
 First release, as a PREVIEW at `https://next.posternonline.com`. The apex and www are not
