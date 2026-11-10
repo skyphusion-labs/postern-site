@@ -51,6 +51,14 @@ everything. Change it ONLY with `node scripts/set-preview.mjs on|off`, which rew
 files to match; CI fails if the flag and the files disagree. At the apex cutover, run
 `off` in the same PR that adds the apex and www routes.
 
+**Known property of the preview: robots.txt does not block crawling.** Cloudflare Managed
+robots.txt stays on for the zone, by ruling. It puts its own `User-agent: *` group with
+`Allow: /` before ours. RFC 9309 merges groups for the same user agent, and on a tie the
+least restrictive rule wins, so a conforming crawler may crawl the preview. The noindex is
+the control that keeps it out of search results: `X-Robots-Tag` on every page and asset, and
+the robots meta on every page. The post-deploy smoke asserts both, and checks only that our
+own `Disallow: /` group is present, not that it is the only one.
+
 ## Deploy
 
 `.github/workflows/deploy.yml` deploys on a `vX.Y.Z` tag on `main` that matches a
