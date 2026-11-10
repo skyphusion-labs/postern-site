@@ -40,6 +40,7 @@ npm run validate         # html-validate
 npm run check            # links, assets, third-party, CSP, dashes
 npm run coverage         # site map coverage
 npm run dev              # wrangler dev on http://localhost:8787
+npm run smoke            # the deployed site, fetched as a browser (needs network)
 ```
 
 ## Preview mode
@@ -54,6 +55,8 @@ files to match; CI fails if the flag and the files disagree. At the apex cutover
 
 `.github/workflows/deploy.yml` deploys on a `vX.Y.Z` tag on `main` that matches a
 `## X.Y.Z` heading in `CHANGELOG.md`, or by hand from `main`. A merge never deploys.
+After the upload, a post-deploy smoke (`scripts/smoke.mjs`) fetches every page as a browser
+from each custom-domain route and fails on anything the edge added or changed.
 The only route is the preview host `next.posternonline.com`. The apex and www still go to
 the demo; the cutover is Conrad's call.
 
