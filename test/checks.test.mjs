@@ -6,7 +6,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, cpSync, rmSync, readFileSync } f
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkSite, checkCoverage, checkDashes } from "../scripts/site-lib.mjs";
+import { checkSite, checkCoverage, checkDashes, previewEdits, checkPreview, readMode, PREVIEW_META, ROBOTS_PUBLIC } from "../scripts/site-lib.mjs";
 import { gate } from "../scripts/deploy-gate.mjs";
 
 const REAL_SITE = resolve(dirname(fileURLToPath(import.meta.url)), "..", "site");
@@ -203,4 +203,67 @@ test("a defect injected into a copy of the real site goes red", () => {
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
+});
+
+// ---- preview mode ---------------------------------------------------------------
+
+// A repo dir holding site-mode.json and a site/ built from the clean fixture.
+function previewRepo(preview, mutate = () => {}) {
+  const repo = mkdtempSync(join(tmpdir(), "postern-site-mode-"));
+  const site = join(repo, "site");
+  const src = fixture({ "robots.txt": ROBOTS_PUBLIC });
+  cpSync(src, site, { recursive: true });
+  rmSync(src, { recursive: true, force: true });
+  writeFileSync(join(repo, "site-mode.json"), JSON.stringify({ preview }));
+  for (const [f, text] of Object.entries(previewEdits(site, preview))) writeFileSync(f, text);
+  mutate(site, repo);
+  return { repo, site };
+}
+function previewProblems(preview, mutate) {
+  const { repo, site } = previewRepo(preview, mutate);
+  try { return checkPreview(repo, site); } finally { rmSync(repo, { recursive: true, force: true }); }
+}
+
+test("control: a site that matches its preview flag passes, in both modes", () => {
+  assert.deepEqual(previewProblems(true), []);
+  assert.deepEqual(previewProblems(false), []);
+});
+test("preview on really writes noindex, Disallow and X-Robots-Tag", () => {
+  const { repo, site } = previewRepo(true);
+  try {
+    assert.match(readFileSync(join(site, "a", "index.html"), "utf8"), /<meta name="robots" content="noindex, nofollow" data-preview>/);
+    assert.match(readFileSync(join(site, "robots.txt"), "utf8"), /^Disallow: \/$/m);
+    assert.match(readFileSync(join(site, "_headers"), "utf8"), /^ {2}X-Robots-Tag: noindex, nofollow$/m);
+    assert.doesNotMatch(readFileSync(join(site, "404.html"), "utf8"), /data-preview/);
+  } finally { rmSync(repo, { recursive: true, force: true }); }
+});
+test("ci goes red when a preview page is missing its noindex", () => {
+  expectOne(previewProblems(true, (site) => {
+    const f = join(site, "b", "index.html");
+    writeFileSync(f, readFileSync(f, "utf8").replace(PREVIEW_META + "\n", ""));
+  }), /b\/index.html does not match site-mode.json preview: true/);
+});
+test("ci goes red when a preview robots.txt allows crawling", () => {
+  expectOne(previewProblems(true, (site) => writeFileSync(join(site, "robots.txt"), ROBOTS_PUBLIC)), /robots.txt does not match/);
+});
+test("ci goes red when preview _headers drops X-Robots-Tag", () => {
+  expectOne(previewProblems(true, (site) => {
+    const f = join(site, "_headers");
+    writeFileSync(f, readFileSync(f, "utf8").replace("  X-Robots-Tag: noindex, nofollow\n", ""));
+  }), /_headers does not match/);
+});
+test("ci goes red when the public build still carries a noindex", () => {
+  expectOne(previewProblems(false, (site) => {
+    const f = join(site, "index.html");
+    writeFileSync(f, readFileSync(f, "utf8").replace('<meta name="viewport"', PREVIEW_META + '\n<meta name="viewport"'));
+  }), /index.html does not match site-mode.json preview: false/);
+});
+test("ci goes red on a missing or malformed site-mode.json", () => {
+  expectOne(previewProblems(true, (site, repo) => rmSync(join(repo, "site-mode.json"))), /site-mode.json missing/);
+  expectOne(previewProblems(true, (site, repo) => writeFileSync(join(repo, "site-mode.json"), '{"preview":"yes"}')), /needs "preview": true or false/);
+});
+test("the real repo matches its own preview flag", () => {
+  const repo = resolve(REAL_SITE, "..");
+  assert.equal(typeof readMode(repo).preview, "boolean");
+  assert.deepEqual(checkPreview(repo, REAL_SITE), []);
 });

@@ -1,4 +1,3 @@
+# Preview build (site-mode.json preview: true). Nothing here is indexed.
 User-agent: *
-Allow: /
-
-Sitemap: https://posternonline.com/sitemap.xml
+Disallow: /
