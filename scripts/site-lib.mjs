@@ -22,8 +22,28 @@ export function listFiles(dir) {
 const TAG_RE = /<([a-zA-Z][a-zA-Z0-9-]*)\b((?:[^>"']|"[^"]*"|'[^']*')*)>/g;
 const ATTR_RE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>"']+)))?/g;
 
+// Remove HTML comments the way a browser ends them (HTML spec, comment states): "<!-->"
+// and "<!--->" close at once; otherwise the comment ends at the first "-->" or "--!>",
+// or runs to the end of the input. A plain /<!--.*?-->/ replace treats "<!-->" as an
+// opener and hides the tags a browser would run after it (CodeQL alert 1).
+export function stripComments(html) {
+  let out = "";
+  let i = 0;
+  for (;;) {
+    const open = html.indexOf("<!--", i);
+    if (open === -1) return out + html.slice(i);
+    out += html.slice(i, open);
+    const body = open + 4;
+    if (html.startsWith(">", body)) { i = body + 1; continue; }
+    if (html.startsWith("->", body)) { i = body + 2; continue; }
+    const ends = [["-->", html.indexOf("-->", body)], ["--!>", html.indexOf("--!>", body)]].filter(([, at]) => at !== -1);
+    if (!ends.length) return out;
+    const [tok, at] = ends.reduce((a, b) => (b[1] < a[1] ? b : a));
+    i = at + tok.length;
+  }
+}
 export function parseTags(html) {
-  const src = html.replace(/<!--[\s\S]*?-->/g, "");
+  const src = stripComments(html);
   const tags = [];
   let m;
   TAG_RE.lastIndex = 0;

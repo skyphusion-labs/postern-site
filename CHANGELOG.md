@@ -16,6 +16,12 @@ workflow refuses a tag without its heading.
   `Disallow: /` group; Cloudflare Managed robots.txt may prepend its own groups. The ci
   checks read repo files, so they could not see the analytics beacon the zone injected
   for browsers on 2026-11-10; this step would have failed on it.
+- Comment handling in the checks follows the HTML spec (CodeQL alert 1,
+  `js/incomplete-multi-character-sanitization`). `parseTags` stripped comments with
+  `/<!--[\s\S]*?-->/`, which treats `<!-->` and `<!--->` as openers and ignores `--!>`, so
+  a tag a browser runs after one of those was hidden from every check. That included the
+  smoke, which reads HTML the edge served. `stripComments` now ends a comment where a browser
+  does; `test/comments.test.mjs` holds the controls.
 
 ## 0.1.0 (2026-11-10)
 
