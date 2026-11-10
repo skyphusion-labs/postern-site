@@ -1,0 +1,21 @@
+# postern-site: a static-assets-only Worker. No Worker script, no bindings, no build step.
+# Everything served is in ./site.
+name = "postern-site"
+compatibility_date = "2026-10-01"
+
+# NOT PUBLIC YET (postern#838). workers.dev and preview URLs are off, and there are no
+# routes: a deploy uploads the site but nothing serves it. The posternonline.com apex and
+# www routes still 301 to the demo; the cutover is the lead's call after Conrad reviews.
+# A temporary preview route is added here only with the lead's approval.
+workers_dev = false
+preview_urls = false
+
+[assets]
+directory = "./site"
+html_handling = "auto-trailing-slash"
+not_found_handling = "404-page"
+
+# The privacy page says Worker logs are off for this site. Keep this false, or change
+# that page in the same PR.
+[observability]
+enabled = false

@@ -1,0 +1,22 @@
+{
+  "name": "postern-site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Marketing site for Postern, self-hosted email for humans and agents.",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test test/",
+    "check": "node scripts/check-site.mjs",
+    "coverage": "node scripts/check-coverage.mjs",
+    "validate": "html-validate \"site/**/*.html\"",
+    "dev": "wrangler dev"
+  },
+  "devDependencies": {
+    "html-validate": "11.17.0",
+    "wrangler": "4.153.0"
+  }
+}

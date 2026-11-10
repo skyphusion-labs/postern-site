@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self-host Postern in your own Cloudflare account</title>
+<meta name="description" content="Install Postern in your own Cloudflare account with one command. It sets up storage, the Worker, Email Routing, Email Sending and DNS, and refuses before it breaks anything.">
+<link rel="canonical" href="https://posternonline.com/self-host/">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/theme.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="/"><svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><rect x="1" y="1" width="30" height="30" rx="8" fill="currentColor"/><path d="M10 25V14a6 6 0 0 1 12 0v11" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><path d="M7 25h18" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>Postern</a>
+    <nav class="site-nav" aria-label="Main">
+      <ul>
+        <li><a href="/agents/">For agents</a></li>
+        <li><a href="/humans/">Webmail and IMAP</a></li>
+        <li><a href="/self-host/" aria-current="page">Self-host</a></li>
+        <li><a href="https://demo.posternonline.com">Demo</a></li>
+        <li><a href="https://github.com/skyphusion-labs/postern">GitHub</a></li>
+      </ul>
+    </nav>
+    <button id="theme-btn" class="theme-btn" type="button" hidden>Theme</button>
+  </div>
+</header>
+
+<main id="main">
+  <section class="page-head">
+    <div class="wrap">
+      <p class="eyebrow">Self-host</p>
+      <h1>One command, in your own Cloudflare account</h1>
+      <p class="lede">The Postern installer sets everything up in your account with your own API token. It talks only to the Cloudflare API. Your mail, your store and your keys never leave your account.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="need">
+    <div class="wrap prose">
+      <h2 id="need">What you need</h2>
+      <ul>
+        <li>A Cloudflare account, and a domain on it that uses Cloudflare DNS.</li>
+        <li>To send mail, the Cloudflare Workers Paid plan (USD 5 a month, paid to Cloudflare). Cloudflare Email Sending requires it. Receiving works on the free plan.</li>
+        <li>Node 22 or later, and a clone of the Postern repository.</li>
+        <li>A Cloudflare API token with the permissions listed in <a href="https://github.com/skyphusion-labs/postern/blob/main/deploy/README.md#the-token">deploy/README.md</a>. The installer checks each one and names any that is missing before it changes anything.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="install">
+    <div class="wrap prose">
+      <h2 id="install">Install</h2>
+<pre><code>git clone https://github.com/skyphusion-labs/postern &amp;&amp; cd postern
+export CLOUDFLARE_API_TOKEN=&lt;your token&gt;
+
+node deploy/postern.mjs install --domain your-domain.example --dry-run
+node deploy/postern.mjs install --domain your-domain.example</code></pre>
+      <p>The dry run prints the plan and changes nothing. The real run then:</p>
+      <ol>
+        <li>Creates the D1 database and the R2 attachment bucket, and applies the schema.</li>
+        <li>Deploys the Worker at <code>mail.</code> on your domain, with a mailbox token it generates.</li>
+        <li>Turns on Email Sending and Email Routing, and adds the DNS records they need.</li>
+        <li>Adds a DMARC record only if your domain has none. An existing DMARC policy is never changed.</li>
+        <li>Creates your first admin login and turns on webmail sign-in.</li>
+      </ol>
+      <p>Every line of output names one resource and says <code>created</code>, <code>updated</code>, <code>unchanged</code> or <code>kept</code>. Your credentials go to a local file with mode 600. The installer prints its path, never the values.</p>
+      <p><strong>What we measured</strong> on a fresh domain on 2026-11-10: the install took 22 seconds. Cloudflare accepted the first send about a minute later, and a message sent to the domain was stored 2 seconds after that.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="safe">
+    <div class="wrap prose">
+      <h2 id="safe">It refuses before it breaks anything</h2>
+      <p>The installer collects every problem first and changes nothing if it finds one. For example, it refuses when your domain already receives mail somewhere else, when an Email Routing rule already sends mail elsewhere, when your SPF record needs a merge by hand, or when the web hostname is already in use.</p>
+      <p>Run the same command again and it changes nothing. A run that stopped partway resumes where it left off.</p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="current">
+    <div class="wrap prose">
+      <h2 id="current">Keep it current</h2>
+      <p><code>node deploy/postern.mjs upgrade</code> applies only the new migrations, then deploys the new Worker. Before it migrates, it records a D1 Time Travel bookmark and the Worker version it replaces, so <code>rollback</code> can go back. <code>status</code> gives a read-only report at any time.</p>
+      <p><a href="https://github.com/skyphusion-labs/postern/blob/main/DEPLOY.md#3-keep-it-current-upgrade-and-rollback">Upgrade and rollback in DEPLOY.md</a></p>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="no-hosted">
+    <div class="wrap prose">
+      <h2 id="no-hosted">There is no hosted Postern</h2>
+      <p>Skyphusion Labs does not run Postern for anyone. There is no account to sign up for, and we hold none of your mail. The only Postern instance we run is the public demo, a shared mailbox with a read-only token.</p>
+      <p>No Cloudflare account yet? <a href="https://github.com/skyphusion-labs/postern/blob/main/DEPLOY.md#6-try-it-locally-no-cloudflare-account-needed">Run the whole mailbox on your computer</a> under <code>wrangler dev</code> first.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="https://github.com/skyphusion-labs/postern/blob/main/DEPLOY.md">Read the full DEPLOY.md</a>
+        <a class="btn btn-secondary" href="https://demo.posternonline.com">Try the demo</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <ul>
+      <li><a href="/privacy/">Privacy</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern">Postern source</a></li>
+      <li><a href="https://github.com/skyphusion-labs/postern-site">Site source</a></li>
+      <li><a href="https://skyphusion.org">Skyphusion Labs</a></li>
+    </ul>
+    <p>This site sets no cookies and loads no trackers, fonts or embeds from anyone else.</p>
+    <p>Postern is free software under the AGPL-3.0. This site is AGPL-3.0 too.</p>
+  </div>
+</footer>
+</body>
+</html>
