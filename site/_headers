@@ -2,7 +2,6 @@
 # The CSP is the browser-side half of the no-third-party rule; scripts/check-site.mjs
 # is the CI-side half and fails if this policy names any origin other than 'self'.
 /*
-  X-Robots-Tag: noindex, nofollow
   Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; manifest-src 'self'; frame-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'; object-src 'none'; upgrade-insecure-requests
   Referrer-Policy: no-referrer
   X-Content-Type-Options: nosniff
