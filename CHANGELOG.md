@@ -6,6 +6,17 @@ workflow refuses a tag without its heading.
 
 ## Unreleased
 
+## 0.2.1 (2026-11-11)
+
+- Every postern link and the install command move from v1.9.0 to v1.14.0, the current
+  release: the home page DEPLOY.md button, and the self-host page token, clone, release,
+  upgrade, local-run and DEPLOY.md links. The anchors they use exist at v1.14.0.
+- `ci` now fails when the site links a postern release that is not the latest
+  (`scripts/check-postern-version.mjs`), and `ci` also runs daily, so the next postern
+  release shows here as a red check instead of drifting unseen. A release list it cannot
+  read is a failure (exit 2), not a pass.
+- README: the Deploy section names the live routes (the apex and www since 0.2.0).
+
 ## 0.2.0 (2026-11-10)
 
 - Cutover (Conrad, 2026-11-10): the site now serves the posternonline.com apex and www.

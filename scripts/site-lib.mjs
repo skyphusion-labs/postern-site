@@ -370,3 +370,66 @@ export function checkPreview(repoRoot, root) {
   return Object.keys(edits).map((f) =>
     `${relative(root, f)} does not match site-mode.json preview: ${mode.preview} (run: node scripts/set-preview.mjs ${mode.preview ? "on" : "off"})`);
 }
+
+// ---- postern version --------------------------------------------------------
+//
+// The site links one postern release throughout (DEPLOY.md, the installer, the clone
+// command). It drifted to v1.9.0 while v1.14.0 was current, and nothing noticed. These
+// checks make the pin explicit: every reference names the same release, and that release
+// is the latest one.
+
+// What counts as a reference to a postern release:
+//   github.com/skyphusion-labs/postern/{blob,tree,releases/tag}/vX.Y.Z
+//   git clone --branch vX.Y.Z ... skyphusion-labs/postern
+//   "Postern vX.Y.Z" in text
+// The repo also carries postern-mcp-v* tags; "postern/" in a URL never matches those.
+const POSTERN_REF_RES = [
+  /github\.com\/skyphusion-labs\/postern\/(?:blob|tree|releases\/tag)\/(v\d+\.\d+\.\d+)\b/g,
+  /--branch\s+(v\d+\.\d+\.\d+)\b(?=[^\n]*skyphusion-labs\/postern\b)/g,
+  /\bPostern\s+(v\d+\.\d+\.\d+)\b/g,
+];
+
+/** Every postern version reference in the HTML under root: [{ file, line, version }]. */
+export function posternVersionRefs(root) {
+  const refs = [];
+  for (const file of listFiles(root)) {
+    if (extname(file) !== ".html") continue;
+    const lines = stripComments(readFileSync(file, "utf8")).split("\n");
+    lines.forEach((l, i) => {
+      for (const re of POSTERN_REF_RES) {
+        for (const m of l.matchAll(re)) refs.push({ file: relative(root, file), line: i + 1, version: m[1] });
+      }
+    });
+  }
+  return refs;
+}
+
+function semverKey(tag) {
+  const m = /^v(\d+)\.(\d+)\.(\d+)$/.exec(tag);
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : null;
+}
+
+/** The highest published postern release tag (vX.Y.Z): no drafts, no prereleases, no postern-mcp-v*. */
+export function latestPosternTag(releases) {
+  let best = null;
+  for (const r of releases ?? []) {
+    if (!r || r.draft || r.prerelease) continue;
+    const k = semverKey(r.tag_name);
+    if (!k) continue;
+    if (!best || k[0] > best.k[0] || (k[0] === best.k[0] && (k[1] > best.k[1] || (k[1] === best.k[1] && k[2] > best.k[2])))) {
+      best = { tag: r.tag_name, k };
+    }
+  }
+  return best ? best.tag : null;
+}
+
+/** Problems: no reference at all, references that disagree, or a pin that is not the latest. */
+export function checkPosternVersion(refs, latest) {
+  const problems = [];
+  if (!latest) return ["postern version: no published vX.Y.Z release was found, so the pin cannot be judged"];
+  if (refs.length === 0) return ["postern version: the site names no postern release, so the pin cannot be judged"];
+  for (const r of refs) {
+    if (r.version !== latest) problems.push(`${r.file}:${r.line}: links postern ${r.version}, the latest release is ${latest}`);
+  }
+  return problems;
+}

@@ -6,7 +6,8 @@ import { mkdtempSync, mkdirSync, writeFileSync, cpSync, rmSync, readFileSync } f
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { checkSite, checkCoverage, checkDashes, previewEdits, checkPreview, readMode, PREVIEW_META, ROBOTS_PUBLIC } from "../scripts/site-lib.mjs";
+import { checkSite, checkCoverage, checkDashes, previewEdits, checkPreview, readMode, PREVIEW_META, ROBOTS_PUBLIC, posternVersionRefs, latestPosternTag, checkPosternVersion } from "../scripts/site-lib.mjs";
+import { spawnSync } from "node:child_process";
 import { gate } from "../scripts/deploy-gate.mjs";
 
 const REAL_SITE = resolve(dirname(fileURLToPath(import.meta.url)), "..", "site");
@@ -266,4 +267,76 @@ test("the real repo matches its own preview flag", () => {
   const repo = resolve(REAL_SITE, "..");
   assert.equal(typeof readMode(repo).preview, "boolean");
   assert.deepEqual(checkPreview(repo, REAL_SITE), []);
+});
+
+// ---- postern version (the site links the latest release) ---------------------
+
+function versionFixture(pages) {
+  const root = mkdtempSync(join(tmpdir(), "postern-site-ver-"));
+  for (const [p, html] of Object.entries(pages)) {
+    mkdirSync(dirname(join(root, p)), { recursive: true });
+    writeFileSync(join(root, p), html);
+  }
+  return root;
+}
+const REL = (tag, extra = {}) => ({ tag_name: tag, draft: false, prerelease: false, ...extra });
+const RELEASES = [REL("v1.9.0"), REL("v1.14.0"), REL("v1.10.1"), REL("postern-mcp-v1.20.0"), REL("v1.15.0", { prerelease: true }), REL("v2.0.0", { draft: true })];
+
+test("latestPosternTag picks the highest vX.Y.Z by number, not by text, and skips drafts, prereleases and postern-mcp", () => {
+  assert.equal(latestPosternTag(RELEASES), "v1.14.0");
+  assert.equal(latestPosternTag([]), null);
+});
+
+test("posternVersionRefs finds links, the clone branch and text, and ignores other repos and comments", () => {
+  const root = versionFixture({
+    "index.html": [
+      '<a href="https://github.com/skyphusion-labs/postern/blob/v1.9.0/DEPLOY.md">a</a>',
+      '<a href="https://github.com/skyphusion-labs/postern/releases/tag/v1.9.0">Postern v1.9.0</a>',
+      "<pre>git clone --branch v1.9.0 https://github.com/skyphusion-labs/postern</pre>",
+      '<a href="https://github.com/skyphusion-labs/postern-mcp/blob/v3.0.0/x">mcp</a>',
+      '<a href="https://github.com/skyphusion-labs/postern/releases/tag/postern-mcp-v1.20.0">mcp tag</a>',
+      "<!-- https://github.com/skyphusion-labs/postern/blob/v0.1.0/old -->",
+    ].join("\n"),
+  });
+  try {
+    const refs = posternVersionRefs(root);
+    assert.deepEqual(refs.map((r) => [r.line, r.version]), [[1, "v1.9.0"], [2, "v1.9.0"], [2, "v1.9.0"], [3, "v1.9.0"]]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("ci goes red when the site links a postern release that is not the latest", () => {
+  const refs = [{ file: "index.html", line: 3, version: "v1.14.0" }, { file: "self-host/index.html", line: 9, version: "v1.9.0" }];
+  assert.deepEqual(checkPosternVersion(refs, "v1.14.0"), ["self-host/index.html:9: links postern v1.9.0, the latest release is v1.14.0"]);
+  assert.deepEqual(checkPosternVersion(refs.slice(0, 1), "v1.14.0"), []);
+});
+
+test("ci goes red, not green, when there is nothing to judge", () => {
+  assert.equal(checkPosternVersion([], "v1.14.0").length, 1);
+  assert.equal(checkPosternVersion([{ file: "a", line: 1, version: "v1.14.0" }], null).length, 1);
+});
+
+test("the version CLI exits 1 on a stale pin, 0 on the latest, and 2 when it cannot read releases", () => {
+  const cli = resolve(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "check-postern-version.mjs");
+  const stale = versionFixture({ "index.html": '<a href="https://github.com/skyphusion-labs/postern/blob/v1.9.0/DEPLOY.md">d</a>' });
+  const fresh = versionFixture({ "index.html": '<a href="https://github.com/skyphusion-labs/postern/blob/v1.14.0/DEPLOY.md">d</a>' });
+  const rel = join(stale, "releases.json");
+  writeFileSync(rel, JSON.stringify(RELEASES));
+  const run = (site, file) => spawnSync(process.execPath, [cli, site, "--releases-json", file], { encoding: "utf8" });
+  try {
+    assert.equal(run(stale, rel).status, 1);
+    assert.equal(run(fresh, rel).status, 0);
+    const missing = run(fresh, join(stale, "no-such.json"));
+    assert.equal(missing.status, 2);
+    assert.match(missing.stdout, /UNMEASURED/);
+  } finally {
+    rmSync(stale, { recursive: true, force: true });
+    rmSync(fresh, { recursive: true, force: true });
+  }
+});
+
+test("the real site names one postern release everywhere", () => {
+  const versions = new Set(posternVersionRefs(REAL_SITE).map((r) => r.version));
+  assert.equal(versions.size, 1, `the site links several postern releases: ${[...versions].join(", ")}`);
 });
