@@ -65,8 +65,12 @@ own `Disallow: /` group is present, not that it is the only one.
 `## X.Y.Z` heading in `CHANGELOG.md`, or by hand from `main`. A merge never deploys.
 After the upload, a post-deploy smoke (`scripts/smoke.mjs`) fetches every page as a browser
 from each custom-domain route and fails on anything the edge added or changed.
-The only route is the preview host `next.posternonline.com`. The apex and www still go to
-the demo; the cutover is Conrad's call.
+The routes are `posternonline.com` and `www.posternonline.com` (`wrangler.toml`, since 0.2.0).
+The demo mailbox is `demo.posternonline.com`, in the postern-demo repo.
+
+The site links one postern release throughout. `ci` fails when any link names a release that
+is not the latest (`scripts/check-postern-version.mjs`, also run daily), so a new postern
+release needs a site PR that moves every link, then a site tag.
 
 ## License
 
