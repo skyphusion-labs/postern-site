@@ -34,7 +34,7 @@ test("expectations come from the repo: every site map page, the 404, assets, the
   assert.match(EXP.csp, /^default-src 'none';/);
 });
 test("wrangler.toml custom domains are the default targets", () => {
-  assert.deepEqual(customDomains(readFileSync(join(REPO, "wrangler.toml"), "utf8")), ["https://next.posternonline.com"]);
+  assert.deepEqual(customDomains(readFileSync(join(REPO, "wrangler.toml"), "utf8")), ["https://posternonline.com", "https://www.posternonline.com"]);
 });
 
 test("control: every real page, served cleanly, passes", () => {
@@ -55,8 +55,9 @@ test("smoke goes red on a missing or altered CSP", () => {
   has(checkPage(served(HOME, { headers: { "content-security-policy": EXP.csp.replace("script-src 'self'", "script-src 'self' https://static.cloudflareinsights.com") } }), HOME, EXP), /CSP differs/);
 });
 test("smoke goes red on a missing X-Robots-Tag in preview mode, on a page and on an asset", () => {
-  has(checkPage(served(HOME, { headers: { "x-robots-tag": undefined } }), HOME, EXP), /no X-Robots-Tag/);
-  has(checkAsset({ status: 200, headers: {} }, "/assets/img/webmail-inbox.png", EXP), /no X-Robots-Tag/);
+  const PREVIEW = { ...EXP, preview: true };
+  has(checkPage(served(HOME, { headers: { "x-robots-tag": undefined } }), HOME, PREVIEW), /no X-Robots-Tag/);
+  has(checkAsset({ status: 200, headers: {} }, "/assets/img/webmail-inbox.png", PREVIEW), /no X-Robots-Tag/);
   assert.deepEqual(checkAsset({ status: 200, headers: {} }, "/x.png", { ...EXP, preview: false }), []);
 });
 test("smoke goes red on a cookie", () => {
@@ -73,12 +74,14 @@ test("smoke goes red on a stale version, a redirect, or a wrong status", () => {
 
 const CF_MANAGED = "# BEGIN Cloudflare Managed content\n\nUser-agent: *\nContent-Signal: search=yes,ai-train=no\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\n\n# END Cloudflare Managed Content\n\n";
 test("robots: our Disallow group passes alone and behind Cloudflare Managed robots.txt", () => {
-  assert.deepEqual(checkRobots({ status: 200, body: ROBOTS_PREVIEW }, EXP), []);
-  assert.deepEqual(checkRobots({ status: 200, body: CF_MANAGED + ROBOTS_PREVIEW }, EXP), []);
+  const PREVIEW = { ...EXP, preview: true };
+  assert.deepEqual(checkRobots({ status: 200, body: ROBOTS_PREVIEW }, PREVIEW), []);
+  assert.deepEqual(checkRobots({ status: 200, body: CF_MANAGED + ROBOTS_PREVIEW }, PREVIEW), []);
 });
 test("robots goes red when our own Disallow group is missing in preview mode", () => {
-  has(checkRobots({ status: 200, body: CF_MANAGED }, EXP), /group is missing/);
-  has(checkRobots({ status: 200, body: "User-agent: *\nAllow: /\n" }, EXP), /group is missing/);
+  const PREVIEW = { ...EXP, preview: true };
+  has(checkRobots({ status: 200, body: CF_MANAGED }, PREVIEW), /group is missing/);
+  has(checkRobots({ status: 200, body: "User-agent: *\nAllow: /\n" }, PREVIEW), /group is missing/);
   assert.deepEqual(checkRobots({ status: 200, body: "User-agent: *\nAllow: /\n" }, { ...EXP, preview: false }), []);
 });
 

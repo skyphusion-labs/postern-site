@@ -3,17 +3,17 @@
 name = "postern-site"
 compatibility_date = "2026-10-01"
 
-# workers.dev and preview URLs stay off. The ONE route is the preview host
-# next.posternonline.com (0.1.0), which Conrad opens to review the site. While it is the
-# only route, site-mode.json keeps "preview": true, so every page is noindex and
-# robots.txt disallows everything.
-# The posternonline.com apex and www still 301 to the demo and are NOT routed here. The
-# cutover is Conrad's call; when it happens, add the apex and www routes and run
-# `node scripts/set-preview.mjs off` in the same PR.
+# workers.dev and preview URLs stay off. Since 0.2.0 (Conrad, 2026-11-10: "let's switch
+# to it") the site serves the posternonline.com apex and www, and site-mode.json has
+# "preview": false, so pages are indexable. The demo mailbox stays on
+# demo.posternonline.com (its own Worker, `postern`). The 0.1.x preview host
+# next.posternonline.com is retired. To stage a future redesign, add a preview host back
+# and run `node scripts/set-preview.mjs on` for that build only.
 workers_dev = false
 preview_urls = false
 routes = [
-  { pattern = "next.posternonline.com", custom_domain = true },
+  { pattern = "posternonline.com", custom_domain = true },
+  { pattern = "www.posternonline.com", custom_domain = true },
 ]
 
 [assets]

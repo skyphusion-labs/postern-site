@@ -6,6 +6,13 @@ workflow refuses a tag without its heading.
 
 ## Unreleased
 
+## 0.2.0 (2026-11-10)
+
+- Cutover (Conrad, 2026-11-10): the site now serves the posternonline.com apex and www.
+  Preview mode is off (`node scripts/set-preview.mjs off`), so pages are indexable and
+  robots.txt no longer disallows crawling. The demo mailbox stays on demo.posternonline.com.
+  The 0.1.x preview host next.posternonline.com is retired.
+
 ## 0.1.1 (2026-11-10)
 
 - Post-deploy smoke (postern-site#3): after each deploy, `scripts/smoke.mjs` fetches every
