@@ -6,6 +6,13 @@ workflow refuses a tag without its heading.
 
 ## Unreleased
 
+## 0.2.5 (2026-11-13)
+
+- Every postern link and the install command move from v1.16.1 to v1.17.0, the current
+  release: the home page DEPLOY.md button, and the self-host page token, clone, release,
+  upgrade, local-run and DEPLOY.md links. The anchors they use exist at v1.17.0 (DEPLOY.md
+  and deploy/ are unchanged from v1.16.1).
+
 ## 0.2.4 (2026-11-13)
 
 - Every postern link and the install command move from v1.16.0 to v1.16.1, the current

@@ -44,7 +44,7 @@
         <li>A Cloudflare account, and a domain on it that uses Cloudflare DNS.</li>
         <li>To send mail, the Cloudflare Workers Paid plan (USD 5 a month, paid to Cloudflare). Cloudflare Email Sending requires it. Receiving works on the free plan.</li>
         <li>Node 22 or later, and a clone of the Postern repository.</li>
-        <li>A Cloudflare API token with the permissions listed in <a href="https://github.com/skyphusion-labs/postern/blob/v1.16.1/deploy/README.md#the-token">deploy/README.md</a>. The installer checks each one and names any that is missing before it changes anything.</li>
+        <li>A Cloudflare API token with the permissions listed in <a href="https://github.com/skyphusion-labs/postern/blob/v1.17.0/deploy/README.md#the-token">deploy/README.md</a>. The installer checks each one and names any that is missing before it changes anything.</li>
       </ul>
     </div>
   </section>
@@ -52,12 +52,12 @@
   <section class="section" aria-labelledby="install">
     <div class="wrap prose">
       <h2 id="install">Install</h2>
-<pre><code>git clone --branch v1.16.1 https://github.com/skyphusion-labs/postern &amp;&amp; cd postern
+<pre><code>git clone --branch v1.17.0 https://github.com/skyphusion-labs/postern &amp;&amp; cd postern
 export CLOUDFLARE_API_TOKEN=&lt;your token&gt;
 
 node deploy/postern.mjs install --domain your-domain.example --dry-run
 node deploy/postern.mjs install --domain your-domain.example</code></pre>
-      <p>This installs <a href="https://github.com/skyphusion-labs/postern/releases/tag/v1.16.1">Postern v1.16.1</a>, the current release. The dry run prints the plan and changes nothing. The real run then:</p>
+      <p>This installs <a href="https://github.com/skyphusion-labs/postern/releases/tag/v1.17.0">Postern v1.17.0</a>, the current release. The dry run prints the plan and changes nothing. The real run then:</p>
       <ol>
         <li>Creates the D1 database and the R2 attachment bucket, and applies the schema.</li>
         <li>Deploys the Worker at <code>mail.</code> on your domain, with a mailbox token it generates.</li>
@@ -82,7 +82,7 @@ node deploy/postern.mjs install --domain your-domain.example</code></pre>
     <div class="wrap prose">
       <h2 id="current">Keep it current</h2>
       <p>To upgrade, check out the newer release tag, then run <code>node deploy/postern.mjs upgrade</code>. It applies only the new migrations, then deploys the new Worker. Before it migrates, it records a D1 Time Travel bookmark and the Worker version it replaces, so <code>rollback</code> can go back. <code>status</code> gives a read-only report at any time.</p>
-      <p><a href="https://github.com/skyphusion-labs/postern/blob/v1.16.1/DEPLOY.md#3-keep-it-current-upgrade-and-rollback">Upgrade and rollback in DEPLOY.md</a></p>
+      <p><a href="https://github.com/skyphusion-labs/postern/blob/v1.17.0/DEPLOY.md#3-keep-it-current-upgrade-and-rollback">Upgrade and rollback in DEPLOY.md</a></p>
     </div>
   </section>
 
@@ -90,9 +90,9 @@ node deploy/postern.mjs install --domain your-domain.example</code></pre>
     <div class="wrap prose">
       <h2 id="no-hosted">There is no hosted Postern</h2>
       <p>Skyphusion Labs does not run Postern for anyone. There is no account to sign up for, and we hold none of your mail. The only Postern instance we run is the public demo, a shared mailbox with a read-only token.</p>
-      <p>No Cloudflare account yet? <a href="https://github.com/skyphusion-labs/postern/blob/v1.16.1/DEPLOY.md#6-try-it-locally-no-cloudflare-account-needed">Run the whole mailbox on your computer</a> under <code>wrangler dev</code> first.</p>
+      <p>No Cloudflare account yet? <a href="https://github.com/skyphusion-labs/postern/blob/v1.17.0/DEPLOY.md#6-try-it-locally-no-cloudflare-account-needed">Run the whole mailbox on your computer</a> under <code>wrangler dev</code> first.</p>
       <div class="cta">
-        <a class="btn btn-primary" href="https://github.com/skyphusion-labs/postern/blob/v1.16.1/DEPLOY.md">Read the full DEPLOY.md</a>
+        <a class="btn btn-primary" href="https://github.com/skyphusion-labs/postern/blob/v1.17.0/DEPLOY.md">Read the full DEPLOY.md</a>
         <a class="btn btn-secondary" href="https://demo.posternonline.com">Try the demo</a>
       </div>
     </div>
