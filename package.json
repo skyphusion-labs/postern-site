@@ -1,6 +1,6 @@
 {
   "name": "postern-site",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "private": true,
   "description": "Marketing site for Postern, self-hosted email for humans and agents.",
   "license": "AGPL-3.0-only",
